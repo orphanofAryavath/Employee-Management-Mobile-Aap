@@ -1,23 +1,98 @@
 import React, {useState} from 'react'
-import {StyleSheet, Text, View, Modal, Alert} from 'react-native'
+import {StyleSheet, Text, View, Modal, Alert,KeyboardAvoidingView} from 'react-native'
 import {TextInput, Button} from 'react-native-paper'
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
 
-const CreateEmp = () => {
+const CreateEmp = ({navigation,route}) => {
+    
+  const getDetails = (type) =>{
+    if(route.params){
+        switch(type){
+            case "name":
+                return  route.params.name
+                case "phone":
+                    return  route.params.phone
+                case "email" :
+                    return route.params.email
+                case "salary":
+                    return route.params.salary
+                case "picture" :
+                    return route.params.picture
+                case "position" :
+                    return route.params.position            
+        }
+    }
+    return ""
+  } 
+
+   
     const [Name,
-        setName] = useState("")
+        setName] = useState(getDetails("name"))
     const [phone,
-        setPhone] = useState("")
+        setPhone] = useState(getDetails('phone'))
     const [email,
-        setEmail] = useState("")
+        setEmail] = useState(getDetails('email'))
     const [salary,
-        setSalary] = useState("")
+        setSalary] = useState(getDetails('salary'))
     const [picture,
-        setPicture] = useState("")
+        setPicture] = useState(getDetails('picture'))
+    const [position,
+        setPosition] = useState(getDetails('position'))    
     const [modal,
         setModal] = useState(false)
+    const [enableShit, setenableShit] = useState(false)    
 
+    const submitData = () => {
+       fetch("http://d153e8b565c7.ngrok.io/send-data",{
+           method:"post",
+           headers:{
+               'Content-Type':'application/json'
+           },
+           body:JSON.stringify({
+               name:Name,
+               email,
+               salary,
+               phone,
+               picture,
+               position
+
+           })
+       })
+       .then(res=>res.json(),
+             Alert.alert('Saved successfuly'),
+             navigation.navigate("Home") 
+           )
+        .catch(err=>{
+        Alert.alert("Something went wrong")
+    })
+    }    
+    const updateDetails = () =>{
+        fetch("http://d153e8b565c7.ngrok.io/update",{
+           method:"post",
+           headers:{
+               'Content-Type':'application/json'
+           },
+           body:JSON.stringify({
+               id:route.params._id,
+               name:Name,
+               email,
+               salary,
+               phone,
+               picture,
+               position
+
+           })
+       })
+       .then(res=>res.json(),
+             Alert.alert('Updated successfuly'),
+             navigation.navigate("Home") 
+           )
+        .catch(err=>{
+        Alert.alert("Something went wrong")
+    })
+}
+  
     const pickFromGallery = async() => {
         const {granted} = await Permissions.askAsync(Permissions.CAMERA_ROLL)
         if (granted) {
@@ -85,13 +160,14 @@ const CreateEmp = () => {
     }
 
     return (
-        <View style={styles.root}>
-
+         <KeyboardAvoidingView behavior="position " style={styles.root} enabled={enableShit}>
+            <View >
             <TextInput
                 style={styles.input}
                 theme={theme}
                 label="Name"
                 value={Name}
+                onFocus = {()=>setenableShit(false)}
                 mode="outlined"
                 onChangeText={text => setName(text)}/>
             <TextInput
@@ -99,23 +175,34 @@ const CreateEmp = () => {
                 theme={theme}
                 label="Email"
                 value={email}
+                onFocus = {()=>setenableShit(false)}
                 mode="outlined"
                 onChangeText={text => setEmail(text)}/>
             <TextInput
                 style={styles.input}
                 theme={theme}
                 label="Phone"
+                onFocus = {()=>setenableShit(false)}
                 keyboardType="number-pad"
-                value={Name}
+                value={phone}
                 mode="outlined"
                 onChangeText={text => setPhone(text)}/>
             <TextInput
                 style={styles.input}
                 theme={theme}
                 label="Salary"
-                value={Name}
+                onFocus = {()=>setenableShit(true)}
+                value={salary}
                 mode="outlined"
                 onChangeText={text => setSalary(text)}/>
+                <TextInput
+                style={styles.input}
+                theme={theme}
+                onFocus = {()=>setenableShit(true)}
+                label="Position"
+                value={position}
+                mode="outlined"
+                onChangeText={text => setPosition(text)}/>
             <Button
                 icon={picture ===" "?"upload":"check"}
                 theme={theme}
@@ -124,14 +211,27 @@ const CreateEmp = () => {
                 onPress={() => setModal(true)}>
                 Upload Image
             </Button>
-            <Button
+            {route.params?
+             <Button
+             icon="content-save"
+             theme={theme}
+             style={styles.input}
+             mode="contained"
+             onPress={() => updateDetails()}>
+             Update
+         </Button>
+         :
+         <Button
                 icon="content-save"
                 theme={theme}
                 style={styles.input}
                 mode="contained"
-                onPress={() => console.log("Saved")}>
+                onPress={() => submitData()}>
                 Save
             </Button>
+
+            }
+            
 
             <Modal
                 animationType="slide"
@@ -164,8 +264,8 @@ const CreateEmp = () => {
 
                 </View>
             </Modal>
-
         </View>
+             </KeyboardAvoidingView>
 
     )
 }

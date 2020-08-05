@@ -1,11 +1,31 @@
 import React from 'react'
-import {StyleSheet, Text, View, Image, Linking, Platform} from 'react-native'
+import {StyleSheet, Text, View, Image, Linking, Platform, Alert} from 'react-native'
 import {LinearGradient} from 'expo-linear-gradient';
 import {Title, Card, Button} from 'react-native-paper';
 import {MaterialIcons} from '@expo/vector-icons';
 import {Entypo} from '@expo/vector-icons';
 const Profile = (props) => {
-   const {id,name,picture,phone,salary,email,position} = props.route.params.item
+   const {_id,name,picture,phone,salary,email,position} = props.route.params.item
+
+   const deleteEmp = () => {
+        fetch("http://d153e8b565c7.ngrok.io/delete",
+             {
+                method:"post",
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                body:JSON.stringify({
+                    id:_id
+     
+                })
+             }).then(res=>res.json(),
+                  Alert.alert("deleted successfully"),
+                  props.navigation.navigate("Home")
+                ).catch(err=>{
+                    Alert.alert(err,"Something went wrong")
+                })
+        
+   }
 
     return (
         <View style={styles.root}>
@@ -83,14 +103,17 @@ const Profile = (props) => {
                     icon="account-edit"
                     mode="contained"
                     theme={theme}
-                    onPress={() => console.log('Pressed')}>
+                    onPress={() => {
+                        props.navigation.navigate('Create',
+                        {_id,name,picture,phone,salary,email,position} )           
+                    }}>
                     Edit
                 </Button>
                 <Button
                     icon="delete"
                     mode="contained"
                     theme={theme}
-                    onPress={() => console.log('Pressed')}>
+                    onPress={() => deleteEmp()}>
                     Delete
                 </Button>
             </View>
