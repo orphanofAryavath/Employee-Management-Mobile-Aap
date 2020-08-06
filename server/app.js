@@ -9,7 +9,7 @@ app.use(bodyParser.json())
 
 
 const Employee = moongose.model('employee')
-const mongouri = "mongodb+srv://himanshu:handsomehunk@cluster0.dzzjm.mongodb.net/<dbname>?retryWrites=true&w=majority"
+const mongouri = ##
 
 moongose.connect(mongouri,{
     useNewUrlParser:true
